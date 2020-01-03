@@ -887,8 +887,7 @@ public class JavaCompiler {
     private long start_msec = 0;
     public long elapsed_msec = 0;
 
-    public void compile(List<JavaFileObject> sourceFileObject)
-            throws Throwable {
+    public void compile(List<JavaFileObject> sourceFileObject) throws Throwable {
         compile(sourceFileObject, List.<String>nil(), null);
     }
 
@@ -900,9 +899,7 @@ public class JavaCompiler {
      * @param processors        user provided annotation processors to bypass
      *                          discovery, {@code null} means that no processors were provided
      */
-    public void compile(List<JavaFileObject> sourceFileObjects,
-                        List<String> classnames,
-                        Iterable<? extends Processor> processors) {
+    public void compile(List<JavaFileObject> sourceFileObjects, List<String> classnames, Iterable<? extends Processor> processors) {
         if (processors != null && processors.iterator().hasNext())
             explicitAnnotationProcessingRequested = true;
         // as a JavaCompiler can only be used once, throw an exception if
@@ -1025,7 +1022,7 @@ public class JavaCompiler {
 
         //parse all files
         ListBuffer<JCCompilationUnit> trees = new ListBuffer<>();
-        Set<JavaFileObject> filesSoFar = new HashSet<JavaFileObject>();
+        Set<JavaFileObject> filesSoFar = new HashSet<>();
         for (JavaFileObject fileObject : fileObjects) {
             if (!filesSoFar.contains(fileObject)) {
                 filesSoFar.add(fileObject);
@@ -1278,9 +1275,7 @@ public class JavaCompiler {
     }
 
     boolean explicitAnnotationProcessingRequested() {
-        return
-                explicitAnnotationProcessingRequested ||
-                        explicitAnnotationProcessingRequested(options);
+        return explicitAnnotationProcessingRequested || explicitAnnotationProcessingRequested(options);
     }
 
     static boolean explicitAnnotationProcessingRequested(Options options) {
