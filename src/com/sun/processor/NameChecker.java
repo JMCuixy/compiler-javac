@@ -21,7 +21,7 @@ public class NameChecker {
 
     private final Messager messager;
 
-    NameCheckScanner nameCheckScanner = new NameCheckScanner();
+    private NameCheckScanner nameCheckScanner = new NameCheckScanner();
 
 
     public NameChecker(ProcessingEnvironment processingEnv) {
@@ -33,8 +33,8 @@ public class NameChecker {
      * - 类或接口：符合驼式命名法，首字母大写
      * - 方法：符合驼式命名法，首字母小写
      * - 字段：
-     * || - 类、实例变量：符合驼式命名法，首字母小写
-     * || - 常量：要求全部大写
+     * [- 类、实例变量：符合驼式命名法，首字母小写
+     * [- 常量：要求全部大写
      *
      * @param element
      */
@@ -68,8 +68,8 @@ public class NameChecker {
                 Name simpleName = e.getSimpleName();
                 if (simpleName.contentEquals(e.getEnclosingElement().getSimpleName())) {
                     messager.printMessage(Diagnostic.Kind.WARNING, "一个普通方法" + simpleName + "不应当与类名冲突，避免与构造函数产生混淆", e);
-                    checkCamelCase(e, false);
                 }
+                checkCamelCase(e, false);
             }
             return super.visitExecutable(e, aVoid);
         }
@@ -107,17 +107,19 @@ public class NameChecker {
          */
         private void checkCamelCase(Element e, boolean initialCaps) {
             Name simpleName = e.getSimpleName();
+            // 命名前面一位是否大写
             boolean previousUpper = false;
+            // 常规命名（首字母大写或者小写）
             boolean conventional = true;
-            IntStream intStream = simpleName.codePoints();
-            int firstCodePoint = intStream.findFirst().getAsInt();
+            IntStream codePoints = simpleName.codePoints();
+            int firstCodePoint = codePoints.findFirst().getAsInt();
             // 首字母大写
             if (Character.isUpperCase(firstCodePoint)) {
-                previousUpper = true;
                 if (!initialCaps) {
                     messager.printMessage(Diagnostic.Kind.WARNING, "名称：" + simpleName + "应当以小写字母开头", e);
                     return;
                 }
+                previousUpper = true;
             }
             // 首字母小写
             else if (Character.isLowerCase(firstCodePoint)) {
@@ -126,13 +128,14 @@ public class NameChecker {
                     return;
                 }
             } else {
+                // 首字母既非大写也非小写，直接 WARNNING
                 conventional = false;
             }
 
             if (conventional) {
-                IntStream codePoints = simpleName.codePoints();
-                for (int cp : codePoints.toArray()) {
-                    if (Character.isUpperCase(cp)) {
+                int[] ints = codePoints.toArray();
+                for (int i = 1; i < ints.length; i++) {
+                    if (Character.isUpperCase(ints[i])) {
                         if (previousUpper) {
                             conventional = false;
                             break;
@@ -143,7 +146,6 @@ public class NameChecker {
                     }
                 }
             }
-
             if (!conventional) {
                 messager.printMessage(Diagnostic.Kind.WARNING, "名称" + simpleName + "应当符合驼式命名法（Camel Case Names）", e);
             }
@@ -157,13 +159,18 @@ public class NameChecker {
          */
         private void checkAllCaps(VariableElement e) {
             Name simpleName = e.getSimpleName();
+            IntStream codePoints = simpleName.codePoints();
+            // 是否符合常规（第一个字母必须是大写的英文字母，其余部分可以是下划线或大写字母）
             boolean conventional = true;
-            int firstCodePoint = simpleName.codePoints().findFirst().getAsInt();
+            int firstCodePoint = codePoints.findFirst().getAsInt();
             if (!Character.isUpperCase(firstCodePoint)) {
                 conventional = false;
             } else {
+                // 前一个下划线
                 boolean previousUnderscore = false;
-                for (int cp : simpleName.codePoints().toArray()) {
+                int[] ints = codePoints.toArray();
+                for (int i = 1; i < ints.length; i++) {
+                    int cp = ints[i];
                     if (cp == (int) '_') {
                         if (previousUnderscore) {
                             conventional = false;
@@ -172,8 +179,8 @@ public class NameChecker {
                         previousUnderscore = true;
                     } else {
                         previousUnderscore = false;
-                        if (!Character.isUpperCase(cp) && !Character.isDigit(cp)) {
-                            conventional = true;
+                        if (!Character.isUpperCase(cp) || Character.isDigit(cp)) {
+                            conventional = false;
                             break;
                         }
                     }
@@ -182,7 +189,6 @@ public class NameChecker {
             if (!conventional) {
                 messager.printMessage(Diagnostic.Kind.WARNING, "常量" + simpleName + "应当全部以大写字母或下划线命名，并且以字母开头", e);
             }
-
         }
     }
 }
