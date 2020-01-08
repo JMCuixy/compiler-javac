@@ -23,7 +23,6 @@ public class NameChecker {
 
     private NameCheckScanner nameCheckScanner = new NameCheckScanner();
 
-
     public NameChecker(ProcessingEnvironment processingEnv) {
         this.messager = processingEnv.getMessager();
     }
@@ -133,7 +132,7 @@ public class NameChecker {
             }
 
             if (conventional) {
-                int[] ints = codePoints.toArray();
+                int[] ints = simpleName.codePoints().toArray();
                 for (int i = 1; i < ints.length; i++) {
                     if (Character.isUpperCase(ints[i])) {
                         if (previousUpper) {
@@ -168,7 +167,7 @@ public class NameChecker {
             } else {
                 // 前一个下划线
                 boolean previousUnderscore = false;
-                int[] ints = codePoints.toArray();
+                int[] ints = simpleName.codePoints().toArray();
                 for (int i = 1; i < ints.length; i++) {
                     int cp = ints[i];
                     if (cp == (int) '_') {
